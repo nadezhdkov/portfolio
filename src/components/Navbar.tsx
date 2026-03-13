@@ -7,8 +7,8 @@ const navLinks = [
   { label: "What I Offer", href: "#offer" },
   { label: "My Skills", href: "#skills" },
   { label: "How I Work", href: "#process" },
-  { label: "Trusted Reviews", href: "#reviews" },
-  { label: "FAQ", href: "#faq" },
+  // { label: "Trusted Reviews", href: "#reviews" },
+  // { label: "FAQ", href: "#faq" },
   { label: "Latest Insights", href: "#insights" },
 ];
 
