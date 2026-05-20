@@ -200,7 +200,7 @@ This project is not a template — it's a statement. Every component was designe
 ---
 
 <p align="center">
-  Built with precision by <strong>HopeGM</strong> &nbsp;🕹️&nbsp;
+  Built with precision by <strong>RickMr.</strong> &nbsp;🕹️&nbsp;
   <br/>
   <sub>No templates. No shortcuts. Just craft.</sub>
 </p>
