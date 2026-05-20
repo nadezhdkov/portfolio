@@ -128,6 +128,18 @@ const GALLERY_ITEMS: GalleryItem[] = [
   }
 ];
 
+// Helper to resolve static public assets through Vite's base path in any environment (dev/prod subfolder)
+export const resolveAssetPath = (path: string): string => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    return path;
+  }
+  const base = (import.meta as any).env?.BASE_URL || '/';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  return `${cleanBase}${cleanPath}`;
+};
+
 interface ProjectMediaGalleryProps {
   lang: 'pt' | 'en';
   soundOn: boolean;
@@ -211,7 +223,7 @@ export default function ProjectMediaGallery({ lang, soundOn, onPlayClick, onPlay
                 {/* Image box hover effects */}
                 <div className="relative aspect-video w-full overflow-hidden bg-[#06070b]/90 group-hover:scale-[1.01] transition-transform duration-300">
                   <img
-                    src={item.image}
+                    src={resolveAssetPath(item.image)}
                     alt={lang === 'pt' ? item.titlePT : item.titleEN}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-300"
@@ -295,7 +307,7 @@ export default function ProjectMediaGallery({ lang, soundOn, onPlayClick, onPlay
               {/* Image box with close button float */}
               <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
                 <img
-                  src={activeLightbox.image}
+                  src={resolveAssetPath(activeLightbox.image)}
                   alt={lang === 'pt' ? activeLightbox.titlePT : activeLightbox.titleEN}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
