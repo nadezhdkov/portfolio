@@ -128,16 +128,15 @@ const GALLERY_ITEMS: GalleryItem[] = [
   }
 ];
 
-// Helper to resolve static public assets through Vite's base path in any environment (dev/prod subfolder)
+// Helper to resolve static public assets relative to the app base path, supporting both subfolders and root domains
 export const resolveAssetPath = (path: string): string => {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
     return path;
   }
-  const base = (import.meta as any).env?.BASE_URL || '/';
-  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  // Strip starting slash to make the path fully relative to the current folder level
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  return `${cleanBase}${cleanPath}`;
+  return cleanPath;
 };
 
 interface ProjectMediaGalleryProps {
