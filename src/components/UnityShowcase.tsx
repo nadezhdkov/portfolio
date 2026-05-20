@@ -8,6 +8,63 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Play, Pause, RefreshCw, Gamepad2, Volume2, VolumeX, Swords, Award, Heart, HelpCircle, Activity } from 'lucide-react';
 import { synths } from '../utils/audio';
 
+// @ts-ignore
+import runnerBackground from '../assets/runner/background.png';
+// @ts-ignore
+import runnerCoffee from '../assets/runner/coffee.png';
+// @ts-ignore
+import runnerEnemies from '../assets/runner/enemies.png';
+// @ts-ignore
+import runnerForeground from '../assets/runner/foreground.png';
+// @ts-ignore
+import runnerMiddleground1 from '../assets/runner/middleground1.png';
+// @ts-ignore
+import runnerMiddleground2 from '../assets/runner/middleground2.png';
+// @ts-ignore
+import runnerPlayer from '../assets/runner/player.png';
+// @ts-ignore
+import runnerRestartIcon from '../assets/runner/restart_icon.png';
+// @ts-ignore
+import runnerThorn from '../assets/runner/thorn.png';
+// @ts-ignore
+import runnerTiles from '../assets/runner/tiles.png';
+
+// @ts-ignore
+import flappyBackground from '../assets/flappybird/Background2.png';
+// @ts-ignore
+import flappyBird from '../assets/flappybird/Bird1-1.png';
+// @ts-ignore
+import flappyPipe from '../assets/flappybird/PipeStyle1.png';
+
+// @ts-ignore
+import fCard from '../assets/flowerdefense/card.png';
+// @ts-ignore
+import fCoin from '../assets/flowerdefense/coin.png';
+// @ts-ignore
+import fFlower from '../assets/flowerdefense/flower.png';
+// @ts-ignore
+import fFlower2 from '../assets/flowerdefense/flower2.png';
+// @ts-ignore
+import fFlower3 from '../assets/flowerdefense/flower3.png';
+// @ts-ignore
+import fGrid from '../assets/flowerdefense/grid.png';
+// @ts-ignore
+import fLeaf from '../assets/flowerdefense/leaf.png';
+// @ts-ignore
+import fMiniFlower from '../assets/flowerdefense/mini flower.png';
+// @ts-ignore
+import fShopButton from '../assets/flowerdefense/shop button.png';
+// @ts-ignore
+import fSunrays from '../assets/flowerdefense/sunrays.png';
+// @ts-ignore
+import fTileset from '../assets/flowerdefense/tileset.png';
+// @ts-ignore
+import fTiro from '../assets/flowerdefense/tiro.png';
+// @ts-ignore
+import fMomo from '../assets/flowerdefense/momo_idle_shadow.png';
+// @ts-ignore
+import fArena from '../assets/flowerdefense/flower_arena.jpg';
+
 interface GameConfig {
   spawnInterval: number;
   engineSpeed: number;
@@ -66,11 +123,15 @@ interface Particle {
 }
 
 interface SemicolumnObstacle {
+  id?: number;
   x: number;
   width: number;
   y: number;
   height: number;
   passed: boolean;
+  speed: number;
+  type?: 'thorn' | 'enemy' | 'coffee';
+  pulseAnim?: number;
 }
 
 interface FlappyPipe {
@@ -144,10 +205,149 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
   const runnerIsGrounded = useRef(true);
   const runnerObstaclesRef = useRef<SemicolumnObstacle[]>([]);
 
+  // Load and cache runner assets
+  const runnerAssetsRef = useRef<{
+    background: HTMLImageElement | null;
+    middleground1: HTMLImageElement | null;
+    middleground2: HTMLImageElement | null;
+    foreground: HTMLImageElement | null;
+    tiles: HTMLImageElement | null;
+    player: HTMLImageElement | null;
+    enemies: HTMLImageElement | null;
+    thorn: HTMLImageElement | null;
+    coffee: HTMLImageElement | null;
+    restart_icon: HTMLImageElement | null;
+  }>({
+    background: null,
+    middleground1: null,
+    middleground2: null,
+    foreground: null,
+    tiles: null,
+    player: null,
+    enemies: null,
+    thorn: null,
+    coffee: null,
+    restart_icon: null,
+  });
+
+  // Load and cache flappybird assets
+  const flappyAssetsRef = useRef<{
+    background: HTMLImageElement | null;
+    bird: HTMLImageElement | null;
+    pipe: HTMLImageElement | null;
+  }>({
+    background: null,
+    bird: null,
+    pipe: null,
+  });
+
+  // Load and cache flowerdefense assets
+  const flowerAssetsRef = useRef<{
+    card: HTMLImageElement | null;
+    coin: HTMLImageElement | null;
+    flower: HTMLImageElement | null;
+    flower2: HTMLImageElement | null;
+    flower3: HTMLImageElement | null;
+    grid: HTMLImageElement | null;
+    leaf: HTMLImageElement | null;
+    miniFlower: HTMLImageElement | null;
+    shopButton: HTMLImageElement | null;
+    sunrays: HTMLImageElement | null;
+    tileset: HTMLImageElement | null;
+    tiro: HTMLImageElement | null;
+    momo: HTMLImageElement | null;
+    arena: HTMLImageElement | null;
+  }>({
+    card: null,
+    coin: null,
+    flower: null,
+    flower2: null,
+    flower3: null,
+    grid: null,
+    leaf: null,
+    miniFlower: null,
+    shopButton: null,
+    sunrays: null,
+    tileset: null,
+    tiro: null,
+    momo: null,
+    arena: null,
+  });
+
+  useEffect(() => {
+    const assets = {
+      background: runnerBackground,
+      middleground1: runnerMiddleground1,
+      middleground2: runnerMiddleground2,
+      foreground: runnerForeground,
+      tiles: runnerTiles,
+      player: runnerPlayer,
+      enemies: runnerEnemies,
+      thorn: runnerThorn,
+      coffee: runnerCoffee,
+      restart_icon: runnerRestartIcon,
+    };
+
+    Object.entries(assets).forEach(([key, src]) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        runnerAssetsRef.current[key as keyof typeof assets] = img;
+      };
+    });
+
+    const flappyAssets = {
+      background: flappyBackground,
+      bird: flappyBird,
+      pipe: flappyPipe,
+    };
+
+    Object.entries(flappyAssets).forEach(([key, src]) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        flappyAssetsRef.current[key as keyof typeof flappyAssets] = img;
+      };
+    });
+
+    const flowerAssets = {
+      card: fCard,
+      coin: fCoin,
+      flower: fFlower,
+      flower2: fFlower2,
+      flower3: fFlower3,
+      grid: fGrid,
+      leaf: fLeaf,
+      miniFlower: fMiniFlower,
+      shopButton: fShopButton,
+      sunrays: fSunrays,
+      tileset: fTileset,
+      tiro: fTiro,
+      momo: fMomo,
+      arena: fArena,
+    };
+
+    Object.entries(flowerAssets).forEach(([key, src]) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        flowerAssetsRef.current[key as keyof typeof flowerAssets] = img;
+      };
+    });
+  }, []);
+
   // Platformer (Flappy) Character & Obstacles refs
   const platformerY = useRef(140);
   const platformerVy = useRef(0);
   const platformerPipesRef = useRef<FlappyPipe[]>([]);
+
+  // Flower Defense specific references
+  const flowerCoinsRef = useRef(15);
+  const flowerPlacementModeRef = useRef(false);
+  const flowerHoverXRef = useRef(0);
+  const flowerHoverYRef = useRef(0);
+  const flowerMotherHpRef = useRef(10);
+  const flowerMotherLastFiredRef = useRef(0);
 
   // Sound Sync toggling
   const toggleSound = () => {
@@ -180,11 +380,14 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
     platformerPipesRef.current = [];
 
     if (activeCategory === 'defence') {
-      livesRef.current = 5;
-      // Pre-add 2 cool turrets on the board
+      livesRef.current = 10;
+      flowerMotherHpRef.current = 10;
+      flowerCoinsRef.current = 15;
+      flowerPlacementModeRef.current = false;
+      flowerMotherLastFiredRef.current = 0;
+      // Pre-add 1 helper flower on the board
       turretsRef.current = [
-        { x: 300, y: 110, range: 110, fireCooldown: 400, lastFired: 0, color: '#00f0ff' },
-        { x: 160, y: 150, range: 115, fireCooldown: 300, lastFired: 0, color: '#ff007f' },
+        { x: 310, y: 145, range: 100, fireCooldown: 700, lastFired: 0, color: '#ffff00' },
       ];
     } else {
       livesRef.current = 1;
@@ -273,13 +476,29 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
     }
   };
 
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 500;
+    const y = ((e.clientY - rect.top) / rect.height) * 270;
+    flowerHoverXRef.current = x;
+    flowerHoverYRef.current = y;
+  };
+
+  const handleCanvasMouseLeave = () => {
+    flowerHoverXRef.current = -999;
+    flowerHoverYRef.current = -999;
+  };
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Responsive scale-aware coordinate mapping (logical 500x270 viewport)
+    const x = ((e.clientX - rect.left) / rect.width) * 500;
+    const y = ((e.clientY - rect.top) / rect.height) * 270;
 
     if (gameStateRef.current !== 'playing') {
       resetGame();
@@ -287,43 +506,64 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
     }
 
     if (activeCategory === 'defence') {
-      // Placing a dynamic defense turret
-      // Make sure we didn't click exactly on the core or outside bounds
-      if (x < 15 || y < 15 || x > 485 || y > 265) return;
-      
-      // Prevent placing on path nodes (keep simple clearance spacing)
-      const distanceToPath = tdPathNodes.some(node => {
-        const dx = node.x - x;
-        const dy = node.y - y;
-        return Math.sqrt(dx * dx + dy * dy) < 22;
-      });
-
-      if (distanceToPath) {
-        synths.playError();
-        return; // Clicked on path
+      // 1. Check if clicked on the bottom-left shop card (x: 10..46, y: 208..260)
+      if (x >= 10 && x <= 46 && y >= 208 && y <= 260) {
+        flowerPlacementModeRef.current = !flowerPlacementModeRef.current;
+        synths.playClick();
+        return;
       }
 
-      // Check count limit
-      if (turretsRef.current.length >= 10) {
-        turretsRef.current.shift(); // Remove oldest to fit limit
-      }
+      // 2. Clicked on the board
+      if (flowerPlacementModeRef.current) {
+        // Out of bounds check
+        if (x < 15 || y < 15 || x > 485 || y > 255) {
+          synths.playError();
+          return;
+        }
 
-      const colorList = ['#00f0ff', '#ff007f', '#ffb703', '#39ff14'];
-      const randomColor = colorList[Math.floor(Math.random() * colorList.length)];
-      
-      turretsRef.current.push({
-        x,
-        y,
-        range: 110,
-        fireCooldown: Math.random() * 150 + 250,
-        lastFired: 0,
-        color: randomColor,
-      });
-      
-      synths.playClick();
-      spawnParticles(x, y, '#00f0ff', 10);
+        // Cost check (Mini Flower costs 5 coins)
+        if (flowerCoinsRef.current < 5) {
+          synths.playError();
+          return;
+        }
+
+        // Too close to Mother Flower (250, 135)
+        const dxMother = 250 - x;
+        const dyMother = 135 - y;
+        if (Math.sqrt(dxMother * dxMother + dyMother * dyMother) < 32) {
+          synths.playError();
+          return;
+        }
+
+        // Space overlap check with existing mini flowers
+        const spaceOverlap = turretsRef.current.some(t => {
+          const dx = t.x - x;
+          const dy = t.y - y;
+          return Math.sqrt(dx * dx + dy * dy) < 18;
+        });
+
+        if (spaceOverlap) {
+          synths.playError();
+          return;
+        }
+
+        // Placement succeeds!
+        flowerCoinsRef.current -= 5;
+        turretsRef.current.push({
+          x: Math.floor(x),
+          y: Math.floor(y),
+          range: 100,
+          fireCooldown: 700,
+          lastFired: 0,
+          color: '#ffff00',
+        });
+
+        synths.playClick();
+        spawnParticles(x, y, '#39ff14', 12);
+        flowerPlacementModeRef.current = false;
+      }
     } else {
-      // In Runner or Platformer, clicking inside the screen triggers player jump/flap!
+      // In Runner or Platformer, click acts as a jump/flap action!
       handleJumpAction();
     }
   };
@@ -377,191 +617,389 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
       const physicsTickRatio = config.physicsTickRate / 60; // default 60hz smooth
 
       // -------------------------------------------------------------
-      // SUB GAME 1: TOWER DEFENSE
+      // SUB GAME 1: FLOWER DEFENSE
       // -------------------------------------------------------------
       if (activeCategory === 'defence') {
-        // Draw the curved high-tech pathway
-        ctx.beginPath();
-        ctx.strokeStyle = '#1e2030';
-        ctx.lineWidth = 18;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.moveTo(500, 140);
-        tdPathNodes.forEach(n => ctx.lineTo(n.x, n.y));
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.1)';
-        ctx.lineWidth = 8;
-        ctx.moveTo(500, 140);
-        tdPathNodes.forEach(n => ctx.lineTo(n.x, n.y));
-        ctx.stroke();
-
-        // Spawn Enemies
-        const spawnDelay = (config.spawnInterval * 1000) / speed;
         const now = Date.now();
+
+        // 1. Draw beautiful Grass Backdrop
+        const arenaBg = flowerAssetsRef.current.arena;
+        if (arenaBg && arenaBg.complete && arenaBg.naturalWidth > 0) {
+          ctx.drawImage(arenaBg, 0, 0, 500, 270);
+        } else {
+          // Visual grass fallback
+          ctx.fillStyle = '#62c332';
+          ctx.fillRect(0, 0, 500, 270);
+          const gridImg = flowerAssetsRef.current.grid;
+          if (gridImg && gridImg.complete && gridImg.naturalWidth > 0) {
+            for (let x = 0; x < 500; x += 32) {
+              for (let y = 0; y < 270; y += 32) {
+                ctx.drawImage(gridImg, x, y);
+              }
+            }
+          }
+        }
+
+        // 2. Overlay magical slowly moving morning sunrays
+        const sunImg = flowerAssetsRef.current.sunrays;
+        if (sunImg && sunImg.complete && sunImg.naturalWidth > 0) {
+          ctx.save();
+          ctx.globalAlpha = 0.16;
+          const sunScroll = (frameCountRef.current * 0.12 * speed) % 128;
+          for (let x = -sunScroll; x < 500 + 128; x += 128) {
+            ctx.drawImage(sunImg, x, 0, 128, 270);
+          }
+          ctx.restore();
+        }
+
+        // 3. Spawn Momo slime enemies around the map edges
+        const spawnDelay = (config.spawnInterval * 1250) / speed;
         if (gameStateRef.current === 'playing' && now - lastSpawnTimeRef.current > spawnDelay) {
           if (enemiesRef.current.length < config.entityLimit) {
+            // Generate random spawn points on perimeter of 500x270 rectangle
+            let sx = 0, sy = 0;
+            const borderRoll = Math.random();
+            if (borderRoll < 0.25) {
+              sx = -16;
+              sy = Math.random() * 270;
+            } else if (borderRoll < 0.5) {
+              sx = 516;
+              sy = Math.random() * 270;
+            } else if (borderRoll < 0.75) {
+              sx = Math.random() * 500;
+              sy = -16;
+            } else {
+              sx = Math.random() * 500;
+              sy = 286;
+            }
+
             enemiesRef.current.push({
               id: enemyIdTicker++,
-              x: 500,
-              y: 135 + (Math.random() * 10 - 5),
-              hp: 12 + Math.floor(scoreRef.current * 0.1),
-              maxHp: 12 + Math.floor(scoreRef.current * 0.1),
-              speed: (1.1 + Math.random() * 0.4) * physicsTickRatio,
+              x: sx,
+              y: sy,
+              hp: 12 + Math.floor(scoreRef.current * 0.08),
+              maxHp: 12 + Math.floor(scoreRef.current * 0.08),
+              speed: (0.75 + Math.random() * 0.35) * physicsTickRatio,
               nodeIndex: 0,
-              color: Math.random() > 0.4 ? '#ff0055' : '#b200ff',
+              color: '#5cceee',
             });
           }
           lastSpawnTimeRef.current = now;
         }
 
-        // Draw and Move Enemies
+        // 4. Update & Draw Momo slime enemies crawling towards center (250, 135)
         if (gameStateRef.current === 'playing') {
-          enemiesRef.current.forEach((enemy, idx) => {
-            const node = tdPathNodes[enemy.nodeIndex];
-            if (!node) return;
-
-            const dx = node.x - enemy.x;
-            const dy = node.y - enemy.y;
+          for (let i = enemiesRef.current.length - 1; i >= 0; i--) {
+            const enemy = enemiesRef.current[i];
+            const dx = 250 - enemy.x;
+            const dy = 135 - enemy.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < 4) {
-              enemy.nodeIndex++;
-              // Core leak check
-              if (enemy.nodeIndex >= tdPathNodes.length) {
-                livesRef.current--;
-                synths.playError();
-                spawnParticles(enemy.x, enemy.y, '#ff0055', 12);
-                enemiesRef.current.splice(idx, 1);
-                if (livesRef.current <= 0) {
-                  livesRef.current = 0;
-                  gameStateRef.current = 'gameover';
-                  // Save Highscore
-                  setHighScores(prev => ({
-                    ...prev,
-                    defence: Math.max(prev.defence, scoreRef.current),
-                  }));
-                }
-                return;
+            if (dist < 20) {
+              // Reached Mother Flower!
+              flowerMotherHpRef.current -= 1;
+              livesRef.current = Math.max(0, flowerMotherHpRef.current);
+              synths.playError();
+              spawnParticles(enemy.x, enemy.y, '#e76f51', 12);
+              enemiesRef.current.splice(i, 1);
+
+              if (flowerMotherHpRef.current <= 0) {
+                flowerMotherHpRef.current = 0;
+                livesRef.current = 0;
+                gameStateRef.current = 'gameover';
+                setHighScores(prev => ({
+                  ...prev,
+                  defence: Math.max(prev.defence, scoreRef.current),
+                }));
               }
+              continue;
             } else {
+              // Crawl towards center
               enemy.x += (dx / dist) * enemy.speed * speed;
               enemy.y += (dy / dist) * enemy.speed * speed;
             }
 
-            // Draw Enemy Cube
-            ctx.fillStyle = enemy.color;
-            ctx.fillRect(enemy.x - 6, enemy.y - 6, 12, 12);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(enemy.x - 6, enemy.y - 6, 12, 12);
+            // Draw animated Momo slime sprite sheet
+            const momoImg = flowerAssetsRef.current.momo;
+            if (momoImg && momoImg.complete && momoImg.naturalWidth > 0) {
+              const animCol = Math.floor(frameCountRef.current / 8) % 4;
+              const sx = animCol * 32;
+              const sy = 0; // Row 0 is standard walk crawl
+              ctx.drawImage(momoImg, sx, sy, 32, 32, enemy.x - 16, enemy.y - 16, 32, 32);
+            } else {
+              // Vector mint green fallback
+              ctx.fillStyle = '#5cceee';
+              ctx.beginPath();
+              ctx.arc(enemy.x, enemy.y, 8, 0, Math.PI * 2);
+              ctx.fill();
+            }
 
-            // Health bar
-            const hpWidth = (enemy.hp / enemy.maxHp) * 14;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(enemy.x - 7, enemy.y - 12, 14, 2);
-            ctx.fillStyle = enemy.hp > enemy.maxHp * 0.5 ? '#39ff14' : '#ff007f';
-            ctx.fillRect(enemy.x - 7, enemy.y - 12, hpWidth, 2);
-          });
+            // Active HP Health bar
+            if (enemy.hp < enemy.maxHp) {
+              const hpW = (enemy.hp / enemy.maxHp) * 14;
+              ctx.fillStyle = 'rgba(0,0,0,0.5)';
+              ctx.fillRect(enemy.x - 7, enemy.y - 14, 14, 2.5);
+              ctx.fillStyle = '#39ff14';
+              ctx.fillRect(enemy.x - 7, enemy.y - 14, hpW, 2.5);
+            }
+          }
         }
 
-        // Draw Base Core Shield Gate
-        ctx.beginPath();
-        ctx.arc(30, 140, 16, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 240, 255, 0.15)';
-        ctx.fill();
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
+        // 5. Draw center Mother Flower with slow breathing idle animation
+        const flowerFrame = Math.floor(frameCountRef.current / 10) % 3;
+        const mainFlowerImg = flowerFrame === 0 
+          ? flowerAssetsRef.current.flower 
+          : flowerFrame === 1 
+          ? flowerAssetsRef.current.flower2 
+          : flowerAssetsRef.current.flower3;
 
-        ctx.fillStyle = '#00f0ff';
-        ctx.fillRect(26, 136, 8, 8);
+        if (mainFlowerImg && mainFlowerImg.complete && mainFlowerImg.naturalWidth > 0) {
+          ctx.drawImage(mainFlowerImg, 230, 117.5, 40, 35);
+        } else {
+          // Yellow beautiful flower placeholder
+          ctx.fillStyle = '#fffc33';
+          ctx.beginPath();
+          ctx.arc(250, 135, 18, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
-        // Core decorative shield spinning
-        ctx.beginPath();
-        ctx.arc(30, 140, 22, (frameCountRef.current * 0.02) % (Math.PI * 2), ((frameCountRef.current * 0.02) + 1.2) % (Math.PI * 2));
-        ctx.strokeStyle = '#ff007f';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        // Mother Flower HP status header
+        const mainHpRatio = flowerMotherHpRef.current / 10;
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.fillRect(230, 110, 40, 3);
+        ctx.fillStyle = mainHpRatio > 0.4 ? '#39ff14' : '#ff0055';
+        ctx.fillRect(230, 110, 40 * mainHpRatio, 3);
 
-        // Draw placed Lasers
+        // Mother Flower automatic shooting logic
+        if (gameStateRef.current === 'playing' && enemiesRef.current.length > 0) {
+          // Look for nearest target in range 150
+          let closestEnemy: Enemy | null = null;
+          let closestDist = 150;
+          enemiesRef.current.forEach(e => {
+            const dx = e.x - 250;
+            const dy = e.y - 135;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < closestDist) {
+              closestDist = dist;
+              closestEnemy = e;
+            }
+          });
+
+          // Mother Flower shoots every 650ms / speed (39 frames approx)
+          const lastFiredMother = flowerMotherLastFiredRef.current;
+          if (closestEnemy && now - lastFiredMother > (650 / speed)) {
+            flowerMotherLastFiredRef.current = now;
+            bulletsRef.current.push({
+              x: 250,
+              y: 130,
+              vx: ((closestEnemy.x - 250) / closestDist) * 4.2,
+              vy: ((closestEnemy.y - 130) / closestDist) * 4.2,
+              damage: 4,
+              color: '#39ff14',
+            });
+            // Shoot leaf sparkles
+            spawnParticles(250, 130, '#39ff14', 3);
+          }
+        }
+
+        // 6. Draw Helper Mini-Flowers & autonomous firing
+        const miniFlowerImg = flowerAssetsRef.current.miniFlower;
         turretsRef.current.forEach(tur => {
-          // Body circular node
-          ctx.fillStyle = '#111322';
-          ctx.beginPath();
-          ctx.arc(tur.x, tur.y, 9, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#383a40';
-          ctx.lineWidth = 2;
-          ctx.stroke();
+          if (miniFlowerImg && miniFlowerImg.complete && miniFlowerImg.naturalWidth > 0) {
+            ctx.drawImage(miniFlowerImg, tur.x - 7.5, tur.y - 9, 15, 18);
+          } else {
+            ctx.fillStyle = '#ffb703';
+            ctx.beginPath();
+            ctx.arc(tur.x, tur.y - 2, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#4caf50';
+            ctx.fillRect(tur.x - 1, tur.y + 3, 2, 4);
+          }
 
-          // Colored laser core pulse
-          ctx.fillStyle = tur.color;
-          ctx.beginPath();
-          ctx.arc(tur.x, tur.y, 4, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Outer radius ring helper on placement
-          ctx.beginPath();
-          ctx.arc(tur.x, tur.y, tur.range, 0, Math.PI * 2);
-          ctx.strokeStyle = `${tur.color}15`;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Shooting process
-          if (gameStateRef.current === 'playing') {
-            // Target search: nearest enemy
-            let closestEnemy: Enemy | null = null;
-            let closestDist = tur.range;
-
-            enemiesRef.current.forEach(enemy => {
-              const ex = enemy.x - tur.x;
-              const ey = enemy.y - tur.y;
-              const d = Math.sqrt(ex*ex + ey*ey);
-              if (d < closestDist) {
-                closestDist = d;
-                closestEnemy = enemy;
+          // Shoots nearby slimes (range 100)
+          if (gameStateRef.current === 'playing' && enemiesRef.current.length > 0) {
+            let clEnemy: Enemy | null = null;
+            let clDist = tur.range;
+            enemiesRef.current.forEach(e => {
+              const dx = e.x - tur.x;
+              const dy = e.y - tur.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < clDist) {
+                clDist = dist;
+                clEnemy = e;
               }
             });
 
-            if (closestEnemy && now - tur.lastFired > tur.fireCooldown) {
-              // Shoot beam!
-              ctx.beginPath();
-              ctx.strokeStyle = tur.color;
-              ctx.lineWidth = 2.5;
-              ctx.moveTo(tur.x, tur.y);
-              ctx.lineTo(closestEnemy.x, closestEnemy.y);
-              ctx.stroke();
-
-              // Extra white beam core
-              ctx.beginPath();
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 1;
-              ctx.moveTo(tur.x, tur.y);
-              ctx.lineTo(closestEnemy.x, closestEnemy.y);
-              ctx.stroke();
-
-              // Inflict damage to enemy
-              closestEnemy.hp -= 4;
-
-              // Generate shoot sparks
-              spawnParticles(closestEnemy.x, closestEnemy.y, tur.color, 3);
-
-              if (closestEnemy.hp <= 0) {
-                // Enemy dead
-                scoreRef.current += 10;
-                synths.playClick();
-                spawnParticles(closestEnemy.x, closestEnemy.y, closestEnemy.color, 12);
-                
-                // Remove enemy
-                const eIdx = enemiesRef.current.findIndex(e => e.id === closestEnemy!.id);
-                if (eIdx !== -1) enemiesRef.current.splice(eIdx, 1);
-              }
+            if (clEnemy && now - tur.lastFired > (tur.fireCooldown / speed)) {
+              bulletsRef.current.push({
+                x: tur.x,
+                y: tur.y - 3,
+                vx: ((clEnemy.x - tur.x) / clDist) * 4.5,
+                vy: ((clEnemy.y - (tur.y - 3)) / clDist) * 4.5,
+                damage: 3,
+                color: '#ffff00',
+              });
               tur.lastFired = now;
+              spawnParticles(tur.x, tur.y - 3, '#ffff00', 2);
             }
           }
         });
+
+        // 7. Update, Collision & Render seed Projectiles
+        for (let i = bulletsRef.current.length - 1; i >= 0; i--) {
+          const bullet = bulletsRef.current[i];
+          bullet.x += bullet.vx * speed;
+          bullet.y += bullet.vy * speed;
+
+          // Border cull
+          if (bullet.x < -10 || bullet.x > 510 || bullet.y < -10 || bullet.y > 280) {
+            bulletsRef.current.splice(i, 1);
+            continue;
+          }
+
+          // Draw seed fTiro bullet
+          const tiroImg = flowerAssetsRef.current.tiro;
+          if (tiroImg && tiroImg.complete && tiroImg.naturalWidth > 0) {
+            ctx.drawImage(tiroImg, bullet.x - 8, bullet.y - 8, 16, 16);
+          } else {
+            ctx.fillStyle = bullet.color;
+            ctx.beginPath();
+            ctx.arc(bullet.x, bullet.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Collisions checking
+          if (gameStateRef.current === 'playing') {
+            let didHit = false;
+            for (let j = enemiesRef.current.length - 1; j >= 0; j--) {
+              const enemy = enemiesRef.current[j];
+              const bdx = enemy.x - bullet.x;
+              const bdy = enemy.y - bullet.y;
+              const bdist = Math.sqrt(bdx * bdx + bdy * bdy);
+
+              if (bdist < 15) {
+                enemy.hp -= bullet.damage;
+                spawnParticles(bullet.x, bullet.y, '#ffff00', 4);
+                didHit = true;
+
+                if (enemy.hp <= 0) {
+                  synths.playClick();
+                  spawnParticles(enemy.x, enemy.y, '#5cceee', 12);
+                  scoreRef.current += 10;
+                  flowerCoinsRef.current += 1;
+                  enemiesRef.current.splice(j, 1);
+                }
+                break;
+              }
+            }
+
+            if (didHit) {
+              bulletsRef.current.splice(i, 1);
+            }
+          }
+        }
+
+        // 8. Draw HUD: gold Coin Count Displays
+        const coinImg = flowerAssetsRef.current.coin;
+        if (coinImg && coinImg.complete && coinImg.naturalWidth > 0) {
+          const coinFrame = Math.floor(frameCountRef.current / 6) % 4;
+          const cs = coinFrame * 16;
+          ctx.drawImage(coinImg, cs, 0, 16, 16, 15, 12, 16, 16);
+        } else {
+          // Yellow coin vector backup
+          ctx.fillStyle = '#ffb703';
+          ctx.beginPath();
+          ctx.arc(23, 20, 7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Number count text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#000000';
+        ctx.strokeText(`× ${flowerCoinsRef.current}`, 36, 24);
+        ctx.fillText(`× ${flowerCoinsRef.current}`, 36, 24);
+
+        // 9. Draw shop helper Mini Flower Card Button (Bottom-left corner)
+        const fCardImg = flowerAssetsRef.current.card;
+        if (fCardImg && fCardImg.complete && fCardImg.naturalWidth > 0) {
+          ctx.drawImage(fCardImg, 10, 208, 36, 52);
+          
+          // Render miniature helper flower inside card bounds
+          if (miniFlowerImg && miniFlowerImg.complete && miniFlowerImg.naturalWidth > 0) {
+            ctx.drawImage(miniFlowerImg, 20.5, 218, 15, 18);
+          }
+        } else {
+          // Card Box background
+          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+          ctx.fillRect(10, 208, 36, 52);
+          ctx.strokeStyle = '#ffffff';
+          ctx.strokeRect(10, 208, 36, 52);
+          if (miniFlowerImg && miniFlowerImg.complete && miniFlowerImg.naturalWidth > 0) {
+            ctx.drawImage(miniFlowerImg, 20.5, 218, 15, 18);
+          }
+        }
+
+        // Price indicator underneath the card
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeText('5 C', 28, 252);
+        ctx.fillText('5 C', 28, 252);
+
+        // Draw neon border highlighter if active
+        if (flowerPlacementModeRef.current) {
+          ctx.strokeStyle = '#ffb703';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(9.5, 207.5, 37, 53);
+        }
+
+        // 10. Draw placement hover preview holographic
+        if (flowerPlacementModeRef.current && flowerHoverXRef.current > 0 && flowerHoverXRef.current < 500) {
+          const hx = flowerHoverXRef.current;
+          const hy = flowerHoverYRef.current;
+
+          // Check if coordinate is valid (within grass bounds, not too close to Mother or other plants, and fits coin budget)
+          const dxM = 250 - hx;
+          const dyM = 135 - hy;
+          const motherDistance = Math.sqrt(dxM * dxM + dyM * dyM);
+
+          const plantDistanceOk = !turretsRef.current.some(t => {
+            const tdx = t.x - hx;
+            const tdy = t.y - hy;
+            return Math.sqrt(tdx * tdx + tdy * tdy) < 18;
+          });
+
+          const isInsideGrass = hx >= 15 && hx <= 485 && hy >= 15 && hy <= 255;
+          const isMotherDistanceOk = motherDistance >= 32;
+          const hasBudget = flowerCoinsRef.current >= 5;
+
+          const placementValid = isInsideGrass && isMotherDistanceOk && plantDistanceOk && hasBudget;
+
+          ctx.save();
+          // Transparent preview circle range
+          ctx.beginPath();
+          ctx.arc(hx, hy, 100, 0, Math.PI * 2);
+          ctx.fillStyle = placementValid ? 'rgba(57, 255, 20, 0.12)' : 'rgba(255, 0, 85, 0.12)';
+          ctx.fill();
+          ctx.strokeStyle = placementValid ? 'rgba(57, 255, 20, 0.35)' : 'rgba(255, 0, 85, 0.35)';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          // Render semi-transparent mini flower
+          ctx.globalAlpha = 0.55;
+          if (miniFlowerImg && miniFlowerImg.complete && miniFlowerImg.naturalWidth > 0) {
+            ctx.drawImage(miniFlowerImg, hx - 7.5, hy - 9, 15, 18);
+          } else {
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
       }
 
       // -------------------------------------------------------------
@@ -570,31 +1008,67 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
       if (activeCategory === 'runner') {
         const floorY = 210;
 
-        // Draw cyber electric grid floor line
-        ctx.strokeStyle = '#39ff14';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(0, floorY + 12);
-        ctx.lineTo(500, floorY + 12);
-        ctx.stroke();
+        // Helper to draw scrolling full-canvas parallax layers safely holding a fallback
+        const drawScrollingParallax = (img: HTMLImageElement | null, speedFactor: number) => {
+          if (img && img.complete && img.naturalWidth > 0) {
+            const scrollX = (frameCountRef.current * speedFactor * speed) % 500;
+            ctx.drawImage(img, -scrollX, 0, 500, 270);
+            ctx.drawImage(img, 500 - scrollX, 0, 500, 270);
+          }
+        };
 
-        // Staggered vertical floor ticks for scrolling speed feedback
-        ctx.strokeStyle = 'rgba(57, 255, 20, 0.2)';
-        ctx.lineWidth = 2;
-        const tickMove = (frameCountRef.current * 4 * speed) % 40;
-        for (let x = 500 - tickMove; x >= 0; x -= 40) {
-          ctx.beginPath();
-          ctx.moveTo(x, floorY + 12);
-          ctx.lineTo(x - 20, 270);
-          ctx.stroke();
+        // Render multi-layer pixel art parallax environment backdrop
+        drawScrollingParallax(runnerAssetsRef.current.background, 0.15);
+        drawScrollingParallax(runnerAssetsRef.current.middleground1, 0.4);
+        drawScrollingParallax(runnerAssetsRef.current.middleground2, 0.95);
+
+        // Draw foreground overlay layer with proportional width & height (320x64 scale -> 500x100) placed at the bottom
+        const foregroundImg = runnerAssetsRef.current.foreground;
+        if (foregroundImg && foregroundImg.complete && foregroundImg.naturalWidth > 0) {
+          const fgScrollX = (frameCountRef.current * 1.7 * speed) % 500;
+          ctx.drawImage(foregroundImg, -fgScrollX, 170, 500, 100);
+          ctx.drawImage(foregroundImg, 500 - fgScrollX, 170, 500, 100);
         }
 
-        // Draw Player Ship Cube
+        // Draw the ground (tiled with tiles.png or retro neon line fallback)
+        const floorImg = runnerAssetsRef.current.tiles;
+        if (floorImg && floorImg.complete && floorImg.naturalWidth > 0) {
+          const stepSize = 16;
+          const groundScrollX = (frameCountRef.current * 4 * speed) % stepSize;
+          for (let x = -groundScrollX; x < 505 + stepSize; x += stepSize) {
+            // Row 1 (top surface): slice top-center tile [1, 0] at (16,0,16,16), draw at (x, 222)
+            ctx.drawImage(floorImg, 16, 0, 16, 16, x, 222, 16, 16);
+            // Row 2 (middle fill): slice mid-center tile [1, 1] at (16,16,16,16), draw at (x, 238)
+            ctx.drawImage(floorImg, 16, 16, 16, 16, x, 238, 16, 16);
+            // Row 3 (bottom fill): slice mid-center tile [1, 1] at (16,16,16,16), draw at (x, 254)
+            ctx.drawImage(floorImg, 16, 16, 16, 16, x, 254, 16, 16);
+          }
+        } else {
+          // Draw fallback retro electric grid floor
+          ctx.strokeStyle = '#39ff14';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(0, floorY + 12);
+          ctx.lineTo(500, floorY + 12);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(57, 255, 20, 0.2)';
+          ctx.lineWidth = 2;
+          const tickMove = (frameCountRef.current * 4 * speed) % 40;
+          for (let x = 500 - tickMove; x >= 0; x -= 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, floorY + 12);
+            ctx.lineTo(x - 20, 270);
+            ctx.stroke();
+          }
+        }
+
+        // Draw Player Ship / Cat Sprite
         const px = 80;
         if (gameStateRef.current === 'playing') {
           // Apply gravity
-          runnerVy.current += 0.44 * physicsTickRatio;
           runnerY.current += runnerVy.current * speed;
+          runnerVy.current += 0.44 * physicsTickRatio;
 
           if (runnerY.current >= floorY - 10) {
             runnerY.current = floorY - 10;
@@ -608,66 +1082,194 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
           }
         }
 
-        // Render jumping body
-        ctx.fillStyle = '#00f0ff';
-        ctx.fillRect(px - 10, runnerY.current - 10, 18, 18);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(px - 10, runnerY.current - 10, 18, 18);
+        // Draw player cat avatar with fallback (player.png has 48x48 frames)
+        const playerImg = runnerAssetsRef.current.player;
+        if (playerImg && playerImg.complete && playerImg.naturalWidth > 0) {
+          let sx = 0;
+          let sy = 0;
+          
+          if (gameStateRef.current === 'playing') {
+            if (runnerIsGrounded.current) {
+              // Running: animate columns 0 to 5 on Row 0
+              const animFrame = Math.floor(frameCountRef.current / 4) % 6;
+              sx = animFrame * 48;
+              sy = 0;
+            } else {
+              // Jumping: rising or falling
+              if (runnerVy.current < 0) {
+                // Rising: Row 1, Column 0
+                sx = 0;
+                sy = 48;
+              } else {
+                // Falling: Row 2, Column 0
+                sx = 0;
+                sy = 96;
+              }
+            }
+          } else {
+            // Idle/Dead/Menu screen: Row 0, Column 0
+            sx = 0;
+            sy = 0;
+          }
 
-        // Flame booster emission trail
-        if (!runnerIsGrounded.current) {
-          ctx.fillStyle = '#ff0055';
-          ctx.fillRect(px - 15, runnerY.current + 2, 4, 4);
+          // Draw frame with bottom edge aligned at runnerY.current + 10
+          ctx.drawImage(playerImg, sx, sy, 48, 48, px - 24, runnerY.current - 21, 48, 48);
+        } else {
+          ctx.fillStyle = '#00f0ff';
+          ctx.fillRect(px - 10, runnerY.current - 10, 18, 18);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(px - 10, runnerY.current - 10, 18, 18);
         }
 
-        // Spawn Obstacle Pillars
+        // Flame booster trail particle feedback
+        if (!runnerIsGrounded.current && gameStateRef.current === 'playing') {
+          ctx.fillStyle = '#ff0055';
+          ctx.fillRect(px - 14, runnerY.current + 2, 4, 4);
+        }
+
+        // Spawn Obstacles, Enemies, and Coffee Powerups
         const spawnPeriod = (config.spawnInterval * 1200) / speed;
         const now = Date.now();
         if (gameStateRef.current === 'playing' && now - lastSpawnTimeRef.current > spawnPeriod) {
           if (runnerObstaclesRef.current.length < config.entityLimit) {
-            const h = Math.random() * 32 + 20; // varying column height
+            const rand = Math.random();
+            let type: 'thorn' | 'enemy' | 'coffee' = 'thorn';
+            let h = 18;
+            let width = 18;
+            let yVal = floorY - h + 10;
+            
+            if (rand < 0.45) {
+              type = 'thorn';
+              h = 16;
+              width = 16;
+              yVal = floorY - h + 12; // flats down to floor tiles
+            } else if (rand < 0.75) {
+              type = 'enemy';
+              h = 22;
+              width = 22;
+              yVal = Math.random() > 0.5 ? floorY - 14 : floorY - 45; // flying or ground level
+            } else {
+              type = 'coffee';
+              h = 16;
+              width = 16;
+              yVal = floorY - 32 - Math.random() * 32; // hovering floating coffee
+            }
+
             runnerObstaclesRef.current.push({
               id: Math.random(),
               x: 500,
-              y: floorY - h + 10,
-              width: 14 + Math.random() * 8,
+              y: yVal,
+              width: width,
               height: h,
               speed: (3.2 + Math.random() * 0.8) * physicsTickRatio,
               passed: false,
+              type: type,
+              pulseAnim: 0
             });
           }
           lastSpawnTimeRef.current = now;
         }
 
-        // Update and draw Obstacles
+        // Update and draw Obstacles/Items loop
         runnerObstaclesRef.current.forEach((obs, idx) => {
           if (gameStateRef.current === 'playing') {
             obs.x -= obs.speed * speed;
           }
 
-          // Render neon barricade block
-          ctx.fillStyle = '#ff007f';
-          ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-          ctx.strokeStyle = '#ffffff';
-          ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+          const obsType = obs.type || 'thorn';
 
-          // Danger top core light strip
-          ctx.fillStyle = '#ffff00';
-          ctx.fillRect(obs.x + 2, obs.y, obs.width - 4, 3);
+          if (obsType === 'thorn') {
+            const thornImg = runnerAssetsRef.current.thorn;
+            if (thornImg && thornImg.complete && thornImg.naturalWidth > 0) {
+              ctx.drawImage(thornImg, obs.x, obs.y, obs.width, obs.height);
+            } else {
+              // Vector pink triangle fallback spikes
+              ctx.fillStyle = '#ff007f';
+              ctx.beginPath();
+              ctx.moveTo(obs.x, obs.y + obs.height);
+              ctx.lineTo(obs.x + obs.width / 2, obs.y);
+              ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
+              ctx.closePath();
+              ctx.fill();
+              ctx.strokeStyle = '#ffffff';
+              ctx.stroke();
+            }
+          } else if (obsType === 'enemy') {
+            const enemyImg = runnerAssetsRef.current.enemies;
+            if (enemyImg && enemyImg.complete && enemyImg.naturalWidth > 0) {
+              // Add floating/hover wobble pathing
+              const hoverOffset = Math.sin(frameCountRef.current * 0.12) * 2.5;
+              
+              // Find if this is a flying or walking enemy by its yVal (ground level is around floorY - 14, flying is higher)
+              const isFlying = obs.y < floorY - 25;
+              
+              let sx = 0;
+              let sy = 0;
+              let animFrame = 0;
+              let bottomOffset = 30; // base bottom in sprite coords
+              
+              if (isFlying) {
+                // Flying drone: Row 1, Columns 0 and 1
+                animFrame = Math.floor(frameCountRef.current / 6) % 2;
+                sx = animFrame * 48;
+                sy = 48;
+                bottomOffset = 31;
+              } else {
+                // Walking robot: Row 0, Columns 0, 1, 2
+                animFrame = Math.floor(frameCountRef.current / 6) % 3;
+                sx = animFrame * 48;
+                sy = 0;
+                bottomOffset = 30;
+              }
 
-          // Cleaning out-of-screen blocks
+              // Center the 48px sprite on the obstacle's horizontal center
+              const cx = obs.x + obs.width / 2;
+              const dx = cx - 24;
+              // Align bottom edge
+              const dy = (obs.y + obs.height) - bottomOffset + hoverOffset;
+              
+              ctx.drawImage(enemyImg, sx, sy, 48, 48, dx, dy, 48, 48);
+            } else {
+              ctx.fillStyle = '#ff007f';
+              ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+              ctx.strokeStyle = '#ffffff';
+              ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+
+              ctx.fillStyle = '#ffff00';
+              ctx.fillRect(obs.x + 2, obs.y, obs.width - 4, 3);
+            }
+          } else if (obsType === 'coffee') {
+            const coffeeImg = runnerAssetsRef.current.coffee;
+            const floatOffset = Math.sin(frameCountRef.current * 0.1) * 3;
+            if (coffeeImg && coffeeImg.complete && coffeeImg.naturalWidth > 0) {
+              const animFrame = Math.floor(frameCountRef.current / 5) % 5;
+              const sx = animFrame * 17;
+              // Draw 17x18 coffee frame centered on 16x16 obs body
+              ctx.drawImage(coffeeImg, sx, 0, 17, 18, obs.x - 0.5, obs.y + floatOffset - 1, 17, 18);
+            } else {
+              // Glowing booster battery fallback
+              ctx.fillStyle = '#39ff14';
+              ctx.beginPath();
+              ctx.arc(obs.x + obs.width/2, obs.y + obs.height/2 + floatOffset, obs.width/2, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.strokeStyle = '#ffffff';
+              ctx.stroke();
+            }
+          }
+
+          // Off-screen cleanup
           if (obs.x < -40) {
             runnerObstaclesRef.current.splice(idx, 1);
             return;
           }
 
-          // Collision Check
+          // Collisions & Collections logic
           if (gameStateRef.current === 'playing') {
             const runnerLeft = px - 10;
             const runnerRight = px + 8;
-            const runnerTop = runnerY.current - 10;
-            const runnerBottom = runnerY.current + 8;
+            const runnerTop = runnerY.current - 14;
+            const runnerBottom = runnerY.current + 10;
 
             if (
               runnerRight > obs.x &&
@@ -675,15 +1277,23 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
               runnerBottom > obs.y &&
               runnerTop < obs.y + obs.height
             ) {
-              // Collide crash
-              gameStateRef.current = 'gameover';
-              synths.playError();
-              spawnParticles(px, runnerY.current, '#ff007f', 18);
-              
-              setHighScores(prev => ({
-                ...prev,
-                runner: Math.max(prev.runner, scoreRef.current),
-              }));
+              if (obsType === 'coffee') {
+                // Collect delicious hot coffee!
+                scoreRef.current += 20; // 20 bonus points!
+                synths.playSuccess();
+                spawnParticles(obs.x + obs.width / 2, obs.y + obs.height / 2, '#39ff14', 10);
+                runnerObstaclesRef.current.splice(idx, 1);
+              } else {
+                // Collision with spiked thorn or flying monster -> game over!
+                gameStateRef.current = 'gameover';
+                synths.playError();
+                spawnParticles(px, runnerY.current, '#ff0055', 20);
+
+                setHighScores(prev => ({
+                  ...prev,
+                  runner: Math.max(prev.runner, scoreRef.current),
+                }));
+              }
             }
           }
         });
@@ -693,9 +1303,17 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
       // SUB GAME 3: PHYSICS PLATFORMER (FLAPPY SPACE)
       // -------------------------------------------------------------
       if (activeCategory === 'platformer') {
-        // Player Ship coordinates
         const px = 100;
-        
+
+        // Draw parallax Flappy retro background
+        const bgImg = flappyAssetsRef.current.background;
+        if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+          const bgScrollX = (frameCountRef.current * 0.35 * speed) % 256;
+          ctx.drawImage(bgImg, -bgScrollX, 0, 256, 270);
+          ctx.drawImage(bgImg, 256 - bgScrollX, 0, 256, 270);
+          ctx.drawImage(bgImg, 512 - bgScrollX, 0, 256, 270);
+        }
+
         if (gameStateRef.current === 'playing') {
           // Physics step gravity
           platformerVy.current += 0.28 * physicsTickRatio;
@@ -714,21 +1332,43 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
           }
         }
 
-        // Draw ship yellow rocket
-        ctx.fillStyle = '#ffff00';
-        ctx.beginPath();
-        // Triangle thrusting
-        ctx.moveTo(px - 12, platformerY.current - 8);
-        ctx.lineTo(px + 12, platformerY.current);
-        ctx.lineTo(px - 12, platformerY.current + 8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.stroke();
+        // Draw animated rotating flappy bird character
+        const birdImg = flappyAssetsRef.current.bird;
+        if (birdImg && birdImg.complete && birdImg.naturalWidth > 0) {
+          ctx.save();
+          ctx.translate(px, platformerY.current);
+          
+          let angle = platformerVy.current * 0.08;
+          if (angle < -0.45) angle = -0.45;
+          if (angle > 0.85) angle = 0.85;
+          ctx.rotate(angle);
 
-        // Neon engine glow
-        ctx.fillStyle = '#ff007f';
-        ctx.fillRect(px - 15, platformerY.current - 3, 3, 6);
+          let frameIndex = 0;
+          if (gameStateRef.current === 'playing') {
+            frameIndex = Math.floor(frameCountRef.current / 4) % 4;
+          } else {
+            frameIndex = 0;
+          }
+          const sx = frameIndex * 16;
+          // Draw nicely centered 26x26 flappy bird
+          ctx.drawImage(birdImg, sx, 0, 16, 16, -13, -13, 26, 26);
+          ctx.restore();
+        } else {
+          // Fallback ship vector drawing
+          ctx.fillStyle = '#ffff00';
+          ctx.beginPath();
+          ctx.moveTo(px - 12, platformerY.current - 8);
+          ctx.lineTo(px + 12, platformerY.current);
+          ctx.lineTo(px - 12, platformerY.current + 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.stroke();
+
+          // Neon engine glow
+          ctx.fillStyle = '#ff007f';
+          ctx.fillRect(px - 15, platformerY.current - 3, 3, 6);
+        }
 
         // Spawn Pipes
         const spawnDelay = (config.spawnInterval * 1600) / speed;
@@ -736,12 +1376,12 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
         if (gameStateRef.current === 'playing' && now - lastSpawnTimeRef.current > spawnDelay) {
           if (platformerPipesRef.current.length < config.entityLimit) {
             // Gap range configuration
-            const gapY = 60 + Math.random() * 100;
-            const gapHeight = 90; // generous space gap
+            const gapY = 50 + Math.random() * 110;
+            const gapHeight = 85;
 
             platformerPipesRef.current.push({
               x: 500,
-              width: 25,
+              width: 32,
               topHeight: gapY,
               bottomHeight: 270 - (gapY + gapHeight),
               passed: false,
@@ -750,6 +1390,45 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
           lastSpawnTimeRef.current = now;
         }
 
+        // Sliced pipe renderer helper
+        const pipeImg = flappyAssetsRef.current.pipe;
+        const drawPipe = (x: number, y: number, width: number, height: number, inverted: boolean) => {
+          if (pipeImg && pipeImg.complete && pipeImg.naturalWidth > 0) {
+            ctx.save();
+            if (inverted) {
+              // Top pipe (upside down)
+              ctx.translate(x + width / 2, y + height / 2);
+              ctx.scale(1, -1);
+              
+              const capH = 14;
+              // Cap at the bottom edge in flipped local space
+              ctx.drawImage(pipeImg, 0, 0, 32, capH, -width / 2, height / 2 - capH, width, capH);
+              // Shaft
+              const shaftH = height - capH;
+              if (shaftH > 0) {
+                ctx.drawImage(pipeImg, 0, capH, 32, 80 - capH, -width / 2, -height / 2, width, shaftH);
+              }
+            } else {
+              // Bottom pipe
+              const capH = 14;
+              // Cap at top
+              ctx.drawImage(pipeImg, 0, 0, 32, capH, x, y, width, capH);
+              // Shaft
+              const shaftH = height - capH;
+              if (shaftH > 0) {
+                ctx.drawImage(pipeImg, 0, capH, 32, 80 - capH, x, y + capH, width, shaftH);
+              }
+            }
+            ctx.restore();
+          } else {
+            // Fallback neon green boxes
+            ctx.fillStyle = '#39ff14';
+            ctx.fillRect(x, y, width, height);
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeRect(x, y, width, height);
+          }
+        };
+
         // Update and Draw pipes
         platformerPipesRef.current.forEach((pipe, index) => {
           if (gameStateRef.current === 'playing') {
@@ -757,23 +1436,11 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
           }
 
           // Draw top pipe
-          ctx.fillStyle = '#39ff14';
-          ctx.fillRect(pipe.x, 0, pipe.width, pipe.topHeight);
-          ctx.strokeStyle = '#ffffff';
-          ctx.strokeRect(pipe.x, -5, pipe.width, pipe.topHeight + 5);
-
-          // Top pipe retro lip rim
-          ctx.fillRect(pipe.x - 3, pipe.topHeight - 12, pipe.width + 6, 12);
-          ctx.strokeRect(pipe.x - 3, pipe.topHeight - 12, pipe.width + 6, 12);
+          drawPipe(pipe.x, 0, pipe.width, pipe.topHeight, true);
 
           // Draw bottom pipe
           const bottomY = 270 - pipe.bottomHeight;
-          ctx.fillRect(pipe.x, bottomY, pipe.width, pipe.bottomHeight);
-          ctx.strokeRect(pipe.x, bottomY, pipe.width, pipe.bottomHeight + 5);
-
-          // Bottom pipe retro lip rim
-          ctx.fillRect(pipe.x - 3, bottomY, pipe.width + 6, 12);
-          ctx.strokeRect(pipe.x - 3, bottomY, pipe.width + 6, 12);
+          drawPipe(pipe.x, bottomY, pipe.width, pipe.bottomHeight, false);
 
           // Points score detection
           if (gameStateRef.current === 'playing' && !pipe.passed && pipe.x < px) {
@@ -788,26 +1455,25 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
             return;
           }
 
-          // Collision Check
+          // Circular projection projection collision checks for absolute fairness
           if (gameStateRef.current === 'playing') {
-            const shipLeft = px - 11;
-            const shipRight = px + 11;
-            const shipTop = platformerY.current - 7;
-            const shipBottom = platformerY.current + 7;
+            const birdRadius = 11;
+            const birdX = px;
+            const birdY = platformerY.current;
 
-            // Intersects top pipe
-            const topCollision = (
-              shipRight > pipe.x &&
-              shipLeft < pipe.x + pipe.width &&
-              shipTop < pipe.topHeight
-            );
+            // Top pipe intersection
+            const closestTopX = Math.max(pipe.x, Math.min(birdX, pipe.x + pipe.width));
+            const closestTopY = Math.max(0, Math.min(birdY, pipe.topHeight));
+            const dstTopX = birdX - closestTopX;
+            const dstTopY = birdY - closestTopY;
+            const topCollision = (dstTopX * dstTopX + dstTopY * dstTopY) < (birdRadius * birdRadius);
 
-            // Intersects bottom pipe
-            const bottomCollision = (
-              shipRight > pipe.x &&
-              shipLeft < pipe.x + pipe.width &&
-              shipBottom > bottomY
-            );
+            // Bottom pipe intersection
+            const closestBottomX = Math.max(pipe.x, Math.min(birdX, pipe.x + pipe.width));
+            const closestBottomY = Math.max(bottomY, Math.min(birdY, 270));
+            const dstBottomX = birdX - closestBottomX;
+            const dstBottomY = birdY - closestBottomY;
+            const bottomCollision = (dstBottomX * dstBottomX + dstBottomY * dstBottomY) < (birdRadius * birdRadius);
 
             if (topCollision || bottomCollision) {
               gameStateRef.current = 'gameover';
@@ -893,9 +1559,9 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
 
       // Lives Indicator
       if (activeCategory === 'defence') {
-        const liveLabel = lang === 'pt' ? 'VIDAS CORE: ' : 'CORE HEALTH: ';
-        c.fillStyle = livesRef.current <= 1 ? '#ff0055' : '#00f0ff';
-        c.fillText(`${liveLabel}${livesRef.current}/5`, 360, 19);
+        const liveLabel = lang === 'pt' ? 'FLOR MÃE: ' : 'MOTHER FLR: ';
+        c.fillStyle = livesRef.current <= 3 ? '#ff0055' : '#39ff14';
+        c.fillText(`${liveLabel}${livesRef.current}/10`, 360, 19);
       } else {
         const hLabel = lang === 'pt' ? 'ESTADO: ONLINE' : 'STATUS: LIVE';
         c.fillStyle = gameStateRef.current === 'gameover' ? '#ff0055' : '#39ff14';
@@ -907,22 +1573,26 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
         c.fillStyle = 'rgba(5, 5, 8, 0.85)';
         c.fillRect(0, 30, 500, 240);
 
-        c.fillStyle = '#00f0ff';
+        c.fillStyle = '#fffc33';
         c.font = 'bold 16px "Space Grotesk", sans-serif';
         c.textAlign = 'center';
         
-        const ptStr = activeCategory === 'defence' ? 'ARENA TOWER DEFENSE' : activeCategory === 'runner' ? 'RUNNER INFINITO' : 'VOO ESPACIAL SENSORIAL';
-        const enStr = activeCategory === 'defence' ? 'ARENA TOWER DEFENSE' : activeCategory === 'runner' ? 'INFINITE RUNNER' : 'SENSORY COSMIC FLIGHT';
+        const ptStr = activeCategory === 'defence' ? 'FLOWER DEFENSE' : activeCategory === 'runner' ? 'GODOT RUNNER' : 'FLAPPY BIRD RETRÔ';
+        const enStr = activeCategory === 'defence' ? 'FLOWER DEFENSE' : activeCategory === 'runner' ? 'GODOT RUNNER' : 'RETRO FLAPPY BIRD';
         c.fillText(lang === 'pt' ? ptStr : enStr, 250, 110);
 
         c.font = '11px "JetBrains Mono", monospace';
         c.fillStyle = 'rgba(255,255,255,0.6)';
         
         const ptSub = activeCategory === 'defence' 
-          ? 'Clique em qualquer lugar da tela para posicionar suas torres!' 
+          ? 'Clique no CARD abaixo esquerdo e depois no mapa para plantar mini flores!' 
+          : activeCategory === 'platformer'
+          ? 'Pressione ESPAÇO ou clique na tela para BATER AS ASAS e subir.'
           : 'Pressione ESPAÇO ou clique na tela para SALTAR obstáculos.';
         const enSub = activeCategory === 'defence'
-          ? 'Click anywhere on the screen to deploy laser turrets!'
+          ? 'Click bottom-left CARD to plant mini helper flowers on the grass board!'
+          : activeCategory === 'platformer'
+          ? 'Press SPACE or click screen to FLAP and fly upwards.'
           : 'Press SPACE or click screen to JUMP obstacles.';
 
         c.fillText(lang === 'pt' ? ptSub : enSub, 250, 140);
@@ -994,25 +1664,25 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
           {/* Navigation categories */}
           <div className="mt-6 space-y-2">
             <CategoryTabBtn
-              label={lang === 'pt' ? "Tower Defense" : "Tower Defense"}
+              label={lang === 'pt' ? "Flower Defense" : "Flower Defense"}
               active={activeCategory === 'defence'}
               onClick={() => setActiveCategory('defence')}
-              subtitle={lang === 'pt' ? "Grade trigonométrica & laser" : "Grid targeting & laser fire"}
-              icon={<Swords className="w-4 h-4 text-cyber-cyan" />}
+              subtitle={lang === 'pt' ? "Defenda a Flor com mini flores" : "Protect Mother Flower with plants"}
+              icon={<Heart className="w-4 h-4 text-cyber-green" />}
             />
             <CategoryTabBtn
-              label={lang === 'pt' ? "Unlimited Runner" : "Unlimited Runner"}
+              label={lang === 'pt' ? "Flappy Bird" : "Flappy Bird"}
+              active={activeCategory === 'platformer'}
+              onClick={() => setActiveCategory('platformer')}
+              subtitle={lang === 'pt' ? "Voo e desvios de canos" : "Flap and dodge retro pipes"}
+              icon={<Heart className="w-4 h-4 text-cyber-yellow" />}
+            />
+            <CategoryTabBtn
+              label={lang === 'pt' ? "Godot Runner" : "Godot Runner"}
               active={activeCategory === 'runner'}
               onClick={() => setActiveCategory('runner')}
               subtitle={lang === 'pt' ? "Desvios em alta velocidade" : "Avoid obstacles at extreme h-speed"}
               icon={<Award className="w-4 h-4 text-cyber-pink" />}
-            />
-            <CategoryTabBtn
-              label={lang === 'pt' ? "Physics Platformer" : "Physics Platformer"}
-              active={activeCategory === 'platformer'}
-              onClick={() => setActiveCategory('platformer')}
-              subtitle={lang === 'pt' ? "Propulsão e gravidade laser" : "Thrusters, pipes and custom gravity"}
-              icon={<Heart className="w-4 h-4 text-cyber-yellow" />}
             />
           </div>
         </div>
@@ -1065,11 +1735,11 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
             <div>
               {activeCategory === 'defence' && (
                 <div>
-                  <span className="text-[10px] font-mono text-cyber-cyan tracking-widest uppercase font-bold">
-                    GAME RECON: TD_GRID_A* // PLAYABLE
+                  <span className="text-[10px] font-mono text-cyber-green tracking-widest uppercase font-bold">
+                    GAME RECON: FLOWER_DEFENSE_ARENA // PLAYABLE
                   </span>
                   <h5 className="font-display font-bold text-lg text-white">
-                    Tower Defense Sandbox
+                    Flower Defense vs Memo Momo Slimes
                   </h5>
                 </div>
               )}
@@ -1079,17 +1749,17 @@ export default function UnityShowcase({ lang = 'pt' }: UnityShowcaseProps) {
                     GAME RECON: RUN_SCROLL_GEN // PLAYABLE
                   </span>
                   <h5 className="font-display font-bold text-lg text-white">
-                    Unlimited Corridor Runner
+                    Godot Runner
                   </h5>
                 </div>
               )}
               {activeCategory === 'platformer' && (
                 <div>
                   <span className="text-[10px] font-mono text-cyber-yellow tracking-widest uppercase font-bold">
-                    GAME RECON: SPACE_VELOCITY_THRUST // PLAYABLE
+                    GAME RECON: FLAP_DODGE_PIPES // PLAYABLE
                   </span>
                   <h5 className="font-display font-bold text-lg text-white">
-                    Spaceship Flight Physics
+                    Flappy Bird Pixel Retro
                   </h5>
                 </div>
               )}

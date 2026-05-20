@@ -73,6 +73,16 @@ export default function App() {
     return () => clearInterval(timer);
   }, [taglines.length]);
 
+  // Force scroll to top on page refresh/initial load and disable browser scroll restoration
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+    }
+  }, []);
+
   // Update Synths volume preference globally
   const handleSoundToggle = () => {
     const nextState = !soundOn;
@@ -204,6 +214,9 @@ export default function App() {
             </a>
             <a href="#unity-sandbox" onClick={(e) => handleSmoothScroll(e, "unity-sandbox")} className="hover:text-cyber-cyan transition-colors">
               /unity_sandbox
+            </a>
+            <a href="#media-gallery" onClick={(e) => handleSmoothScroll(e, "media-gallery")} className="hover:text-cyber-cyan transition-colors">
+              {lang === 'pt' ? '/galeria' : '/gameplay_gallery'}
             </a>
             <a href="#skills-matrix" onClick={(e) => handleSmoothScroll(e, "skills-matrix")} className="hover:text-cyber-cyan transition-colors">
               {lang === 'pt' ? '/tecnologias' : '/tech_stack'}
@@ -755,7 +768,7 @@ export default function App() {
         </section>
 
         {/* SECTION: GAME SCREENSHOT GALLERY */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 border-t border-white/5 relative bg-[#040508]/40">
+        <section id="media-gallery" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-white/5 relative bg-[#040508]/40">
           <div className="max-w-7xl mx-auto">
             <ProjectMediaGallery 
               lang={lang} 

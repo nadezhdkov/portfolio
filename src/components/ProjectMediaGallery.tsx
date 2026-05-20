@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Image, ZoomIn, X, Film, CheckCircle, Flame, ShieldAlert, Zap } from 'lucide-react';
+import { Image, ZoomIn, X, Film, CheckCircle, Flame, ShieldAlert, Zap, Play } from 'lucide-react';
 
 interface GalleryItem {
   id: string;
@@ -124,6 +124,48 @@ const GALLERY_ITEMS: GalleryItem[] = [
       { labelPT: "Desenvolvimento", labelEN: "Web Platform", value: "TypeScript / CSS" },
       { labelPT: "E-commerce", labelEN: "Store API", value: "Loja & Donates" },
       { labelPT: "Função", labelEN: "My Role", value: "Fundador / CEO" }
+    ]
+  }
+];
+
+export interface VideoItem {
+  id: string;
+  youtubeId: string;
+  titlePT: string;
+  titleEN: string;
+  descPT: string;
+  descEN: string;
+  tags: string[];
+  metrics: { labelPT: string; labelEN: string; value: string }[];
+}
+
+const VIDEO_ITEMS: VideoItem[] = [
+  {
+    id: "pong-timelapse",
+    youtubeId: "GPdcwpb8eqI",
+    titlePT: "Time-Lapse | Programando um jogo de Pong 2D no Unity",
+    titleEN: "Time-Lapse | Programming a 2D Pong Game in Unity",
+    descPT: "Vídeo acelerado mostrando todo o processo de estruturação e codificação do clássico Pong 2D em C#, utilizando as ferramentas nativas de Sprite, colisão e física da Unity.",
+    descEN: "Time-lapse video showcasing the entire development and scripting process of a classic 2D Pong game in C#, leveraging Unity's native Sprites, colliders, and physics.",
+    tags: ["C# Scripting", "Time-Lapse", "Unity Engine", "Game Dev Log"],
+    metrics: [
+      { labelPT: "Duração", labelEN: "Duration", value: "39:29 Min" },
+      { labelPT: "Estilo", labelEN: "Style", value: "Dev Log" },
+      { labelPT: "Engine", labelEN: "Engine", value: "Unity 2D" }
+    ]
+  },
+  {
+    id: "flappybird-unity",
+    youtubeId: "k-yXvMUqhyo",
+    titlePT: "FlappyBird na Unity",
+    titleEN: "Flappy Bird Clone in Unity",
+    descPT: "Gameplay showcase completo do protótipo clássico de Flappy Bird recriado na Unity, abordando física de impulso em 2D, colisores, pontuação progressiva e reciclagem procedural.",
+    descEN: "Complete gameplay showcase of a classic Flappy Bird clone built within Unity, exploring 2D impulse physics, trigger zones, scoring, and procedural scrolling pipelines.",
+    tags: ["Unity Engine", "Physics-2D", "Gameplay Demo", "C# Coding"],
+    metrics: [
+      { labelPT: "Física", labelEN: "Physics", value: "Impulse 2D" },
+      { labelPT: "Estágio", labelEN: "Phase", value: "Gameplay" },
+      { labelPT: "Modo", labelEN: "Mode", value: "Unity 2D" }
     ]
   }
 ];
@@ -281,6 +323,81 @@ export default function ProjectMediaGallery({ lang, soundOn, onPlayClick, onPlay
             </motion.div>
           ))}
         </AnimatePresence>
+      </div>
+
+      {/* Separator / YouTube Videos header */}
+      <div className="border-t border-white/10 pt-8 mt-6">
+        <span className="text-[10px] font-mono text-cyber-cyan tracking-widest uppercase font-bold flex items-center gap-1.5">
+          <Play className="w-3.5 h-3.5 text-cyber-pink animate-pulse" />
+          {lang === 'pt' ? 'GALERIA DE VÍDEOS NO YOUTUBE' : 'YOUTUBE VIDEO SHOWCASE'}
+        </span>
+        <h3 className="font-display font-black text-lg text-white tracking-tight mt-1">
+          {lang === 'pt' ? 'Demonstrações e Time-Lapses de Desenvolvimento' : 'Gameplay Demos & Dev Time-Lapses'}
+        </h3>
+        <p className="text-xs text-white/50 font-mono mt-1">
+          {lang === 'pt' 
+            ? 'Gravações em tempo real e processos de programação acelerados no Unity' 
+            : 'Real-time footage and speed-coding development workflows in Unity'}
+        </p>
+      </div>
+
+      {/* Videos Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {VIDEO_ITEMS.map((video) => (
+          <div
+            key={video.id}
+            className="bg-[#0b0c14]/40 border border-white/10 hover:border-white/20 rounded-xl overflow-hidden flex flex-col justify-between transition-all group relative"
+          >
+            <div className="flex flex-col h-full justify-between">
+              {/* Responsive Iframe container with high-tech framing */}
+              <div className="relative aspect-video w-full overflow-hidden bg-black border-b border-white/5 shadow-inner">
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.youtubeId}`}
+                  title={lang === 'pt' ? video.titlePT : video.titleEN}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-full opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ border: 0 }}
+                />
+              </div>
+
+              {/* Info Block */}
+              <div className="p-4 flex flex-col gap-3 flex-grow bg-white/[0.01]">
+                <div>
+                  <h4 className="font-display font-medium text-white text-sm tracking-tight group-hover:text-cyber-cyan transition-colors">
+                    {lang === 'pt' ? video.titlePT : video.titleEN}
+                  </h4>
+                  <p className="text-[11px] text-white/50 font-sans mt-1 leading-relaxed">
+                    {lang === 'pt' ? video.descPT : video.descEN}
+                  </p>
+                </div>
+
+                {/* Metrics */}
+                <div className="grid grid-cols-3 gap-1.5 border-t border-white/5 pt-2.5">
+                  {video.metrics.map((met, mIdx) => (
+                    <div key={mIdx} className="bg-white/[0.02] border border-white/5 rounded p-1.5 text-center">
+                      <span className="block text-[8px] font-mono text-white/40 uppercase">
+                        {lang === 'pt' ? met.labelPT : met.labelEN}
+                      </span>
+                      <span className="block text-[9px] font-mono text-cyber-pink font-bold truncate mt-0.5">
+                        {met.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {video.tags.map((tag) => (
+                    <span key={tag} className="text-[9px] font-mono bg-white/[0.04] border border-white/5 px-2 py-0.5 rounded text-white/40">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Fullscreen Lightbox Overlay */}
