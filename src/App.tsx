@@ -27,8 +27,12 @@ import {
   MousePointer2,
   Wrench,
   ChevronRight,
-  Database
+  Database,
+  Download
 } from 'lucide-react';
+
+// @ts-ignore
+import curriculoPdf from './assets/Curriculo.pdf';
 
 import LoadingScreen from './components/LoadingScreen';
 import NoiseOverlay from './components/NoiseOverlay';
@@ -332,6 +336,16 @@ export default function App() {
                   <Gamepad2 className="w-4 h-4" />
                   <span>{lang === 'pt' ? 'SIMULADOR DE JOGO' : 'GAMEPLAY SIMULATOR'}</span>
                 </a>
+
+                <a
+                  href={curriculoPdf}
+                  download="Rick_Marques_Viana_CV.pdf"
+                  onClick={handleInteractiveClick}
+                  className="px-6 py-3 rounded-lg bg-cyber-green/10 border border-cyber-green/30 hover:bg-cyber-green/20 text-cyber-green text-xs font-mono font-bold tracking-widest transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(4,220,110,0.15)]"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{lang === 'pt' ? 'BAIXAR CURRÍCULO' : 'DOWNLOAD CV'}</span>
+                </a>
                 
                 <a
                   href="#contact-protocol"
@@ -421,19 +435,25 @@ export default function App() {
                     {lang === 'pt' ? (
                       <>
                         <p>
-                          Comecei programando de forma prática, motivado pela curiosidade de entender como as modificações de jogos e os servidores funcionavam por trás dos panos. Hoje, trabalho criando soluções eficientes em tempo real, com foco em <strong>Java (ecossistema Spigot/Paper)</strong>, <strong>C# (Unity)</strong> e <strong>TypeScript</strong>.
+                          Sou estudante do curso de <strong>Análise e Desenvolvimento de Sistemas (2024 - 2026)</strong> pela Universidade Descomplica e atuo na prática como <strong>Java Web Developer Júnior Freelancer (2025 - 2026)</strong>. Meu foco de trabalho técnico está em projetar e expandir sistemas backend de alta performance, escalabilidade sólida, APIs RESTful e conexões profundas com bancos de dados.
                         </p>
                         <p>
-                          Valorizo código limpo, modular e de fácil manutenção. Ao desenvolver minijogos como BedWars, trabalho diretamente com manipulação de pacotes de baixo nível (NMS) e processamento assíncrono para garantir a estabilidade do servidor. Na Unity, priorizo uma arquitetura desacoplada, utilizando ScriptableObjects para dados e sistemas de Object Pooling para evitar picos de uso do Garbage Collector.
+                          Tenho experiência no desenvolvimento web autoral, como a criação de websites e landing pages premium para corporações (ex: <a href="https://vestaaccounting.com.br/" target="_blank" rel="noreferrer" className="text-cyber-cyan hover:text-cyber-cyan/90 underline font-semibold inline-flex items-center gap-1 transition-colors">Vesta Accounting <ExternalLink className="w-3.5 h-3.5 inline" /></a>), a criação de lojas e-commerce integradas com WordPress e WooCommerce, além da modelagem de analisadores de dados e automações inteligentes para processos e negócios.
+                        </p>
+                        <p>
+                          Lidando tanto com sistemas baseados em <strong>Windows</strong> quanto <strong>Linux/VPS</strong>, estruturo APIs modulares refinadas em Java (com Spring Boot, Lombok) ou Node.js, e opero bancos de dados relacionais e não-relacionais como SQL, MySQL, PostgreSQL, SQLite e MongoDB. Para acelerar entregas com altíssima qualidade de código, integro ativamente engenharia assistida por IAs avançadas (incluindo Cursor, Claude, GitHub Copilot, Agents / MCP, e Antigravity) acoplados ao Docker e controle de versão rígido via Git/GitHub.
                         </p>
                       </>
                     ) : (
                       <>
                         <p>
-                          I started programming practically, driven by curiosity to understand how game modifications and servers worked under the hood. Today, I build real-time systems, focusing on <strong>Java (Spigot/Paper ecosystem)</strong>, <strong>C# (Unity)</strong>, and <strong>TypeScript</strong>.
+                          I am currently pursuing a degree in <strong>Systems Analysis and Development (2024 - 2026)</strong> at Descomplica University, and work as a <strong>Freelance Junior Java Web Developer (2025 - 2026)</strong>. My professional core centers on architecting scalable, high-performance backend systems, RESTful APIs, and complex database management.
                         </p>
                         <p>
-                          I value clean, modular, and maintainable code. When developing game modes like BedWars, I work directly with low-level packet handling (NMS) and asynchronous loops to keep the main thread stable. In Unity, I prioritize decoupled architecture, utilizing ScriptableObjects for data and Object Pooling to prevent garbage collection spikes.
+                          My hands-on experience includes developing custom premium front-facing websites and corporate landing pages — such as <a href="https://vestaaccounting.com.br/" target="_blank" rel="noreferrer" className="text-cyber-cyan hover:text-cyber-cyan/90 underline font-semibold inline-flex items-center gap-1 transition-colors">Vesta Accounting <ExternalLink className="w-3.5 h-3.5 inline" /></a> — crafting robust e-commerce solutions using WordPress with WooCommerce, and creating advanced system analyzers and data pipelines.
+                        </p>
+                        <p>
+                          Operating across both <strong>Windows</strong> and <strong>Linux/VPS</strong> server environments, I deploy robust modular APIs using Java (with Spring Boot, Lombok), Node.js, and Golang, connected to SQL, MySQL, PostgreSQL, SQLite, or MongoDB data sources. To maximize output velocity and sustain premium code quality, I integrate modern AI-Assisted development flows (including Cursor, Claude, GitHub Copilot, Agents / MCP, and Antigravity) running on sandboxed Docker nodes.
                         </p>
                       </>
                     )}

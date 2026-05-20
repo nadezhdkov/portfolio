@@ -16,10 +16,12 @@ const INITIAL_LOGS: TerminalLog[] = [
 export default function TerminalPanel() {
   const [logs, setLogs] = useState<TerminalLog[]>(INITIAL_LOGS);
   const [inputVal, setInputVal] = useState("");
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const terminalContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -136,7 +138,10 @@ export default function TerminalPanel() {
       </div>
 
       {/* Output screen */}
-      <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-3 scrollbar-thin scrollbar-thumb-white/10">
+      <div 
+        ref={terminalContainerRef}
+        className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-3 scrollbar-thin scrollbar-thumb-white/10"
+      >
         {logs.map((log, index) => (
           <div
             key={index}
@@ -158,7 +163,6 @@ export default function TerminalPanel() {
             {log.text}
           </div>
         ))}
-        <div ref={terminalEndRef} />
       </div>
 
       {/* Command prompt form */}
