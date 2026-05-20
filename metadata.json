@@ -1,0 +1,6 @@
+{
+  "name": "Rick GameDev Portfolio",
+  "description": "Portfolio of Rick Dev, a Game Systems Developer, Gameplay Programmer, and Minecraft Creator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
